@@ -546,6 +546,9 @@ body, section {
   color: var(--primary);
   margin-bottom: 1rem;
 }
+#learn-title{
+  color: var(--primary);
+}
 
 /* Footer */
 .site-footer {
