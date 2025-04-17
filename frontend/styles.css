@@ -11,6 +11,7 @@
   --section-bg: #3D3D3D;
   --section-text: #ffffff;
   --chart-bg: #3D3D3D;
+  --footer-text: #ffffff;
 }
 [data-theme="light"] {
   /* Your existing light variables */
@@ -21,7 +22,7 @@
   --background: #ffffff;
   --input-bg: #f0f0f0;
   
-  --footer-text: #ffffff;
+  --footer-text: #333;
   
   
   /* Add these new variables for content sections */
@@ -803,7 +804,7 @@ body, section {
 
 /* Footer */
 .site-footer {
-  background-color: #333333;
+  background-color: var(--section-bg);
   padding: 2rem 5%;
   text-align: center;
   margin-top: 0; 
