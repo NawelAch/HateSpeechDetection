@@ -282,23 +282,83 @@ function initSmoothScrolling() {
 
 // Initialize Analysis
 function initAnalysis() {
-  checkBtn.addEventListener('click', () => {
+  checkBtn.addEventListener('click', async () => {
     const text = textInput.value.trim();
     if (!text) return;
-
-    const dialect = document.querySelector('.dialect-btn.active').dataset.dialect;
-    const hatePercent = Math.floor(Math.random() * 100);
-    const isHate = hatePercent >= 50;
-
-    resultsChart.data.datasets[0].backgroundColor = isHate ? ['#FF4D4D', '#E0E0E0'] : ['#E0E0E0', '#4CAF50'];
-    resultsChart.data.datasets[0].data = [hatePercent, 100 - hatePercent];
-    resultsChart.update();
-
-    const lang = document.documentElement.lang;
-    verdictText.textContent = lang === 'ar'
-      ? isHate ? `كلام مسيء (${hatePercent}%)` : `كلام عادي (${100 - hatePercent}%)`
-      : isHate ? `Hate Speech (${hatePercent}%)` : `Normal Speech (${100 - hatePercent}%)`;
-    verdictText.style.color = isHate ? '#FF4D4D' : '#4CAF50';
+    try {
+      const response = await fetch("http://127.0.0.1:8000/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text })
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.detail || "Prediction failed");
+      }
+      
+      const isHate = result.is_hate_speech;
+      // Important change: Interpret confidence based on what class was detected
+      const confidence = result.confidence;
+      let hatePercent, notHatePercent;
+      
+      if (isHate) {
+        // If hate speech, confidence is the hate speech percentage
+        hatePercent = confidence;
+        notHatePercent = 100 - confidence;
+      } else {
+        // If not hate speech, confidence is the not-hate speech percentage
+        notHatePercent = confidence;
+        hatePercent = 100 - confidence;
+      }
+      
+      // Set dynamic labels, colors, and data for the chart
+      let labels, colors, data;
+      if (isHate) {
+        labels = ['Hate Speech', 'Not Hate'];
+        colors = ['#FF4D4D', '#E0E0E0'];
+        data = [hatePercent, notHatePercent];
+      } else {
+        labels = ['Not Hate', 'Hate Speech'];
+        colors = ['#4CAF50', '#E0E0E0'];
+        data = [notHatePercent, hatePercent];
+      }
+      // Update the chart with the new data
+      resultsChart.data.labels = labels;
+      resultsChart.data.datasets[0].backgroundColor = colors;
+      resultsChart.data.datasets[0].data = data;
+      resultsChart.update();
+      
+      // Prepare the result text to display the verdict
+      const lang = document.documentElement.lang;
+      let verdictMessage = "";
+      if (lang === 'ar') {
+        // Arabic verdict message
+        verdictMessage = isHate
+          ? `كلام مسيء (${hatePercent.toFixed(1)}%)`
+          : `كلام عادي (${notHatePercent.toFixed(1)}%)`;
+        if (isHate && result.category) {
+          verdictMessage += ` - التصنيف: ${result.category}`;
+        }
+      } else {
+        // English verdict message
+        verdictMessage = isHate
+          ? `Hate Speech (${hatePercent.toFixed(1)}%)`
+          : `Normal Speech (${notHatePercent.toFixed(1)}%)`;
+        if (isHate && result.category) {
+          verdictMessage += ` - Category: ${result.category}`;
+        }
+      }
+      
+      // Set the verdict text and color based on whether it's hate speech or not
+      verdictText.textContent = verdictMessage;
+      verdictText.style.color = isHate ? '#FF4D4D' : '#4CAF50';
+    } catch (err) {
+      console.error("Error:", err);
+      verdictText.textContent = "⚠️ Prediction failed. Please try again.";
+      verdictText.style.color = '#FF4D4D';
+    }
   });
 }
 
