@@ -658,26 +658,52 @@ function updateThemeUI(theme) {
   });
 }
 
-async function sendToOCR(imageFile) {
+// OCR File Processing Function
+async function sendToOCR(file) {
   const formData = new FormData();
-  formData.append('file', imageFile);
+  formData.append('file', file);
 
   try {
     const response = await fetch('http://localhost:8000/ocr', {
       method: 'POST',
       body: formData
     });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'OCR request failed');
+    }
+    
     return await response.json();
   } catch (error) {
     console.error('OCR Error:', error);
-    return { text: 'فشل تحليل الصورة' }; // "OCR failed" in Arabic
+    return { 
+      status: 'error',
+      text: 'فشل تحليل الملف', // "File analysis failed" in Arabic
+      error: error.message
+    };
   }
 }
 
 // Connect to your existing file input
 document.getElementById('file-input').addEventListener('change', async (e) => {
-  const result = await sendToOCR(e.target.files[0]);
-  document.getElementById('text-input').value = result.text;
+  if (!e.target.files || e.target.files.length === 0) {
+    return;
+  }
+  
+  const file = e.target.files[0];
+  
+  // Show loading indicator
+  const textInput = document.getElementById('text-input');
+  textInput.value = 'جاري معالجة الملف...'; // "Processing file..." in Arabic
+  
+  // Check file type
+  const fileType = file.type;
+  console.log(`Processing file: ${file.name} (${fileType})`);
+  
+  // Process the file
+  const result = await sendToOCR(file);
+  
+  // Update the text area with the extracted text
+  textInput.value = result.text;
 });
-
-
