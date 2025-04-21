@@ -91,46 +91,53 @@
       </p>
     </section>
 
-    <section class="detection-section">
-      <!-- Input Section -->
-      <div class="input-box">
-  <div class="dialect-toggle">
-    <button class="dialect-btn active" id="dialect-btn-msa" data-dialect="msa">العربية الفصحى</button>
-    <button class="dialect-btn" id="dialect-btn-darija" data-dialect="darija">اللهجة الجزائرية</button>
-  </div>
-  
-  <!-- Add these new input options -->
-  <div class="input-options">
-    <!-- Voice Input Button -->
-    <button id="voice-btn" class="input-option-btn" title="Voice Input">
-      <i class="fas fa-microphone"></i>
-    </button>
     
-    <!-- File Upload Button -->
-    <label for="file-input" class="input-option-btn" title="Upload File">
-      <i class="fas fa-paperclip"></i>
-      <input type="file" id="file-input" accept=".txt,.pdf,.doc,.docx,image/*">
-    </label>
-  </div>
-  
-  <textarea id="text-input" placeholder="اكتب النص هنا..."></textarea>
-  <button id="check-btn">تحليل</button>
-  
-  <!-- Voice recording status -->
-  <div id="voice-status" style="display: none; color: var(--primary); text-align: center;">
-    جاري التسجيل... اضغط للتوقف
-  </div>
-</div>
+    </section>
 
-      <!-- Results Section -->
-      <div class="results-container">
-        <div class="chart-canvas-container">
-          <canvas id="results-chart"></canvas>
+
+
+    <section id="hate-det" class="hate-det-section">
+      <section class="detection-section">
+        <!-- Input Section -->
+        <div class="input-box">
+          <div class="dialect-toggle">
+            <button class="dialect-btn active" id="dialect-btn-msa" data-dialect="msa">العربية الفصحى</button>
+            <button class="dialect-btn" id="dialect-btn-darija" data-dialect="darija">اللهجة الجزائرية</button>
+          </div>
+          
+          <!-- Wrap textarea and buttons in a container -->
+          <div class="textarea-container">
+            <textarea id="text-input" placeholder="اكتب النص هنا..."></textarea>
+            <div class="input-buttons-container">
+              <button id="voice-btn" class="input-option-btn" title="Voice Input">
+                <i class="fas fa-microphone"></i>
+              </button>
+              <label for="file-input" class="input-option-btn" title="Upload File">
+                <i class="fas fa-paperclip"></i>
+                <input type="file" id="file-input" accept=".txt,.pdf,.doc,.docx,image/*">
+              </label>
+            </div>
+          </div>
+          
+          <button id="check-btn">تحليل</button>
+          
+          <div id="voice-status" style="display: none; color: var(--primary); text-align: center;">
+            جاري التسجيل... اضغط للتوقف
+          </div>
         </div>
-        <div class="verdict" id="verdict-text">نتيجة التحليل تظهر هنا</div>
-      </div>
+  
+        <!-- Results Section -->
+        <div class="results-container">
+          <div class="chart-canvas-container">
+            <canvas id="results-chart"></canvas>
+          </div>
+          <div class="verdict" id="verdict-text">نتيجة التحليل تظهر هنا</div>
+        </div>
+      </section>
     </section>
-    </section>
+
+
+
 
     <!-- About Section -->
     <section id="about-section" class="about-section">
