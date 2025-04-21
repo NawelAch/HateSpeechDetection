@@ -372,6 +372,13 @@ nav {
   box-sizing: border-box;
 }
 
+[data-theme="light"] #mainhome {
+  background-image: url('light-background3.png');
+  background-color: rgba(241, 239, 236, 0.85); /* #F1EFEC with 85% opacity */
+  
+  color: var(--text);
+}
+
 /* Remove default margin/padding from body and sections */
 body, section {
   margin: 0;
@@ -722,7 +729,7 @@ body, section {
   background: var(--primary);
  color: var(--secondary); 
   border: none;
-  width: 101%;
+  width: 102%;
   height: 52px;
   border-radius: 10px;
   font-weight: 700;
@@ -953,7 +960,7 @@ body, section {
 }
 @media (min-width: 769px) {
   #text-input{
-    width: 95%;
+    width: 100% !important;
   }
 }
 
@@ -1002,4 +1009,63 @@ section {
   /* Adjust 80px to your navbar height */
   padding-bottom: 2rem;
 }
+
+[data-theme="light"] .learn-section{
+ background-color: #fffdf7 !important;
+}
+
+
+
+/* New container styles */
+.textarea-container {
+  position: relative;
+  width: 475px;
+}
+
+.input-buttons-container {
+  position: absolute;
+  bottom: 12px;
+  left: -20px !important;
+  right: auto;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+[dir="ltr"] .input-buttons-container {
+  left: 10px !important;
+}
+
+/* Adjust textarea padding to prevent text overlap */
+#text-input {
+  padding-bottom: 78px !important; /* Make space for buttons */
+  width: 100% !important; /* Ensure full width */
+}
+
+@media (max-width: 769px) {
+  #text-input{
+    width: 140% !important;
+  }
+}
+
+
+/* Adjust button styles for new position */
+.input-option-btn {
+  width: 36px !important;
+  height: 36px !important;
+  background: var(--input-bg) !important;
+  border: 0.5px solid rgba(0, 0, 0, 0.184) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.input-option-btn:hover {
+  background: var(--primary) !important;
+}
+
+/* Fix for RTL/LTR layouts */
+[dir="rtl"] .input-buttons-container {
+  right: auto;
+  left: 10px;
+}
+
+
 
