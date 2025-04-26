@@ -132,6 +132,19 @@
             <canvas id="results-chart"></canvas>
           </div>
           <div class="verdict" id="verdict-text">نتيجة التحليل تظهر هنا</div>
+          <button id="view-more-btn" class="view-more-btn" style="display: none;">عرض التفاصيل</button>
+        </div>
+
+
+        <!-- Add this popup/modal at the bottom of your hate-det section -->
+        <div id="details-popup" class="popup">
+          <div class="popup-content">
+            <span class="close-btn">&times;</span>
+            <h2>تفاصيل تصنيف خطاب الكراهية</h2>
+            <div class="classification-details" id="classification-details">
+              <!-- This will be filled dynamically -->
+            </div>
+          </div>
         </div>
       </section>
     </section>
