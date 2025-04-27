@@ -280,8 +280,27 @@ function initSmoothScrolling() {
   });
 }
 
-// Initialize Analysis
+
 function initAnalysis() {
+  let selectedLanguage = "arabic"; // Default to Arabic (العربية الفصحى)
+
+  // Get the dialect buttons
+  const arabicBtn = document.getElementById('dialect-btn-arabic');
+  const darijaBtn = document.getElementById('dialect-btn-darija');
+  const dialectBtns = document.querySelectorAll('.dialect-btn');
+
+  // Event listeners for language selection
+  dialectBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedLanguage = btn.dataset.dialect; // "arabic" or "darija"
+
+      // Manage active button styling
+      dialectBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Prediction button
   checkBtn.addEventListener('click', async () => {
     const text = textInput.value.trim();
     if (!text) return;
@@ -291,29 +310,26 @@ function initAnalysis() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ text, language: selectedLanguage })
       });
+
       const result = await response.json();
       if (!response.ok) {
         throw new Error(result.detail || "Prediction failed");
       }
       
       const isHate = result.is_hate_speech;
-      // Important change: Interpret confidence based on what class was detected
       const confidence = result.confidence;
       let hatePercent, notHatePercent;
       
       if (isHate) {
-        // If hate speech, confidence is the hate speech percentage
         hatePercent = confidence;
         notHatePercent = 100 - confidence;
       } else {
-        // If not hate speech, confidence is the not-hate speech percentage
         notHatePercent = confidence;
         hatePercent = 100 - confidence;
       }
       
-      // Set dynamic labels, colors, and data for the chart
       let labels, colors, data;
       if (isHate) {
         labels = ['Hate Speech', 'Not Hate'];
@@ -324,17 +340,15 @@ function initAnalysis() {
         colors = ['#4CAF50', '#E0E0E0'];
         data = [notHatePercent, hatePercent];
       }
-      // Update the chart with the new data
+      
       resultsChart.data.labels = labels;
       resultsChart.data.datasets[0].backgroundColor = colors;
       resultsChart.data.datasets[0].data = data;
       resultsChart.update();
       
-      // Prepare the result text to display the verdict
       const lang = document.documentElement.lang;
       let verdictMessage = "";
       if (lang === 'ar') {
-        // Arabic verdict message
         verdictMessage = isHate
           ? `كلام مسيء (${hatePercent.toFixed(1)}%)`
           : `كلام عادي (${notHatePercent.toFixed(1)}%)`;
@@ -342,7 +356,6 @@ function initAnalysis() {
           verdictMessage += ` - التصنيف: ${result.category}`;
         }
       } else {
-        // English verdict message
         verdictMessage = isHate
           ? `Hate Speech (${hatePercent.toFixed(1)}%)`
           : `Normal Speech (${notHatePercent.toFixed(1)}%)`;
@@ -351,7 +364,6 @@ function initAnalysis() {
         }
       }
       
-      // Set the verdict text and color based on whether it's hate speech or not
       verdictText.textContent = verdictMessage;
       verdictText.style.color = isHate ? '#FF4D4D' : '#4CAF50';
     } catch (err) {
@@ -361,6 +373,39 @@ function initAnalysis() {
     }
   });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  initThemeToggle();
+  initMobileMenu();
+  initLanguageToggle();
+  const currentDialect = initDialectToggle(); // Get the initial dialect
+  initSmoothScrolling();
+  initResultsChart();
+  initAnalysis();
+  initVoiceRecognition();
+  initFileUpload();
+  
+  // Set active nav items
+  document.querySelector('.nav-link[href="#home"]')?.classList.add('active');
+  document.querySelector('.mobile-nav-link[href="#home"]')?.classList.add('active');
+  
+  // Scroll handler
+  window.addEventListener('scroll', updateActiveSectionOnScroll);
+});
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////
+
+
 
 function updateActiveSectionOnScroll() {
   const sections = document.querySelectorAll('section[id]');
@@ -755,236 +800,236 @@ document.getElementById('file-input').addEventListener('change', async (e) => {
 
 
 
-// DOM Elements for Hate Speech Detection
+// // DOM Elements for Hate Speech Detection
 
-const viewMoreBtn = document.getElementById('view-more-btn');
-const popup = document.getElementById('details-popup');
-const closeBtn = document.querySelector('.close-btn');
-const classificationDetails = document.getElementById('classification-details');
+// const viewMoreBtn = document.getElementById('view-more-btn');
+// const popup = document.getElementById('details-popup');
+// const closeBtn = document.querySelector('.close-btn');
+// const classificationDetails = document.getElementById('classification-details');
 
-// Hate Speech Categories Data with Full Details
-const hateSpeechCategories = {
-  "lgbtq_hate": {
-    name: "كراهية مجتمع الميم",
-    description: "أي كلام يحض على الكراهية أو العنف أو التمييز ضد أفراد مجتمع الميم (المثليين، المثليات، ثنائيي الجنس، المتحولين جنسيًا).",
-    image: "https://img.freepik.com/free-vector/homophobia-illustration-concept_23-2148576276.jpg",
-    examples: {
-      original: "هذا الشاذ يجب أن يُعاقب",
-      translation: "This abnormal should be punished",
-      transliteration: "hdha alshadh yjb an yُ'aqb"
-    },
-    targetedGroup: "أفراد مجتمع الميم (LGBTQ+)",
-    indicativePhrases: [
-      {
-        phrase: "شاذ",
-        explanation: "مصطلح تحقيري لأفراد مجتمع الميم"
-      },
-      {
-        phrase: "يجب أن يُعاقب",
-        explanation: "تحريض على العنف ضد الفئة المستهدفة"
-      }
-    ]
-  },
-  "racism": {
-    name: "عنصرية",
-    description: "الكلام الذي يحط من قيمة أو يميز ضد شخص أو مجموعة بناءً على العرق أو اللون أو الأصل العرقي.",
-    image :'https://img.freepik.com/free-vector/people-protesting-with-stop-racism-message_23-2148611347.jpg',
-    examples: {
-      original: "هؤلاء الزنوج لا يستحقون العيش بيننا",
-      translation: "These blacks don't deserve to live among us",
-      transliteration: "ha'ula' alznwj la ysthwqwn al'aysh bynna"
-    },
-    targetedGroup: "أفراد من أعراق أو أصول معينة",
-    indicativePhrases: [
-      {
-        phrase: "زنوج",
-        explanation: "مصطلح عنصري مهين"
-      },
-      {
-        phrase: "لا يستحقون العيش بيننا",
-        explanation: "تحريض على التمييز العنصري"
-      }
-    ]
-  },
-  // Add other categories with same structure...
-};
+// // Hate Speech Categories Data with Full Details
+// const hateSpeechCategories = {
+//   "lgbtq_hate": {
+//     name: "كراهية مجتمع الميم",
+//     description: "أي كلام يحض على الكراهية أو العنف أو التمييز ضد أفراد مجتمع الميم (المثليين، المثليات، ثنائيي الجنس، المتحولين جنسيًا).",
+//     image: "https://img.freepik.com/free-vector/homophobia-illustration-concept_23-2148576276.jpg",
+//     examples: {
+//       original: "هذا الشاذ يجب أن يُعاقب",
+//       translation: "This abnormal should be punished",
+//       transliteration: "hdha alshadh yjb an yُ'aqb"
+//     },
+//     targetedGroup: "أفراد مجتمع الميم (LGBTQ+)",
+//     indicativePhrases: [
+//       {
+//         phrase: "شاذ",
+//         explanation: "مصطلح تحقيري لأفراد مجتمع الميم"
+//       },
+//       {
+//         phrase: "يجب أن يُعاقب",
+//         explanation: "تحريض على العنف ضد الفئة المستهدفة"
+//       }
+//     ]
+//   },
+//   "racism": {
+//     name: "عنصرية",
+//     description: "الكلام الذي يحط من قيمة أو يميز ضد شخص أو مجموعة بناءً على العرق أو اللون أو الأصل العرقي.",
+//     image :'https://img.freepik.com/free-vector/people-protesting-with-stop-racism-message_23-2148611347.jpg',
+//     examples: {
+//       original: "هؤلاء الزنوج لا يستحقون العيش بيننا",
+//       translation: "These blacks don't deserve to live among us",
+//       transliteration: "ha'ula' alznwj la ysthwqwn al'aysh bynna"
+//     },
+//     targetedGroup: "أفراد من أعراق أو أصول معينة",
+//     indicativePhrases: [
+//       {
+//         phrase: "زنوج",
+//         explanation: "مصطلح عنصري مهين"
+//       },
+//       {
+//         phrase: "لا يستحقون العيش بيننا",
+//         explanation: "تحريض على التمييز العنصري"
+//       }
+//     ]
+//   },
+//   // Add other categories with same structure...
+// };
 
 
 
-// Get random main hate type for testing
-function getRandomMainHateType() {
-  const types = Object.keys(hateSpeechCategories);
-  const randomType = types[Math.floor(Math.random() * types.length)];
-  return {
-    type: randomType,
-    ...hateSpeechCategories[randomType]
-  };
-}
+// // Get random main hate type for testing
+// function getRandomMainHateType() {
+//   const types = Object.keys(hateSpeechCategories);
+//   const randomType = types[Math.floor(Math.random() * types.length)];
+//   return {
+//     type: randomType,
+//     ...hateSpeechCategories[randomType]
+//   };
+// }
 
-// Show Detailed Hate Speech Report
-function showHateSpeechReport(mainType) {
-  const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+// // Show Detailed Hate Speech Report
+// function showHateSpeechReport(mainType) {
+//   const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
   
-  classificationDetails.innerHTML = `
-    <div class="report-header" style="display: flex; align-items: center; gap: 15px;">
-      <img src="${mainType.image}" alt="${mainType.name}" style="width: 60px; height: 60px; object-fit: contain;">
-      <h3 style="margin: 0; color: ${isDarkMode ? '#f7fafc' : '#1a202c'}">تقرير تحليل خطاب الكراهية</h3>
-    </div>
+//   classificationDetails.innerHTML = `
+//     <div class="report-header" style="display: flex; align-items: center; gap: 15px;">
+//       <img src="${mainType.image}" alt="${mainType.name}" style="width: 60px; height: 60px; object-fit: contain;">
+//       <h3 style="margin: 0; color: ${isDarkMode ? '#f7fafc' : '#1a202c'}">تقرير تحليل خطاب الكراهية</h3>
+//     </div>
     
-    <div class="report-section" style="margin-top: 20px; padding: 15px; border-radius: 8px; background: ${isDarkMode ? '#4a5568' : '#f8f9fa'};">
-      <div class="report-row" style="margin-bottom: 12px;">
-        <span class="report-label" style="font-weight: bold; color: ${isDarkMode ? '#cbd5e0' : '#4a5568'}; min-width: 120px; display: inline-block;">النص الأصلي:</span>
-        <p class="report-content arabic-text" style="display: inline; color: ${isDarkMode ? '#f7fafc' : '#1a202c'};">${mainType.examples.original}</p>
-      </div>
+//     <div class="report-section" style="margin-top: 20px; padding: 15px; border-radius: 8px; background: ${isDarkMode ? '#4a5568' : '#f8f9fa'};">
+//       <div class="report-row" style="margin-bottom: 12px;">
+//         <span class="report-label" style="font-weight: bold; color: ${isDarkMode ? '#cbd5e0' : '#4a5568'}; min-width: 120px; display: inline-block;">النص الأصلي:</span>
+//         <p class="report-content arabic-text" style="display: inline; color: ${isDarkMode ? '#f7fafc' : '#1a202c'};">${mainType.examples.original}</p>
+//       </div>
       
-      <div class="report-row" style="margin-bottom: 12px;">
-        <span class="report-label" style="font-weight: bold; color: ${isDarkMode ? '#cbd5e0' : '#4a5568'}; min-width: 120px; display: inline-block;">الترجمة:</span>
-        <p class="report-content" style="display: inline; color: ${isDarkMode ? '#f7fafc' : '#1a202c'};">${mainType.examples.translation}</p>
-      </div>
+//       <div class="report-row" style="margin-bottom: 12px;">
+//         <span class="report-label" style="font-weight: bold; color: ${isDarkMode ? '#cbd5e0' : '#4a5568'}; min-width: 120px; display: inline-block;">الترجمة:</span>
+//         <p class="report-content" style="display: inline; color: ${isDarkMode ? '#f7fafc' : '#1a202c'};">${mainType.examples.translation}</p>
+//       </div>
       
-      <div class="report-row" style="margin-bottom: 12px;">
-        <span class="report-label" style="font-weight: bold; color: ${isDarkMode ? '#cbd5e0' : '#4a5568'}; min-width: 120px; display: inline-block;">نوع الخطاب:</span>
-        <p class="report-content category-badge" style="display: inline; color: ${isDarkMode ? '#f7fafc' : '#1a202c'};">${mainType.name}</p>
-      </div>
+//       <div class="report-row" style="margin-bottom: 12px;">
+//         <span class="report-label" style="font-weight: bold; color: ${isDarkMode ? '#cbd5e0' : '#4a5568'}; min-width: 120px; display: inline-block;">نوع الخطاب:</span>
+//         <p class="report-content category-badge" style="display: inline; color: ${isDarkMode ? '#f7fafc' : '#1a202c'};">${mainType.name}</p>
+//       </div>
       
-      <div class="report-row" style="margin-bottom: 12px;">
-        <span class="report-label" style="font-weight: bold; color: ${isDarkMode ? '#cbd5e0' : '#4a5568'}; min-width: 120px; display: inline-block;">الفئة المستهدفة:</span>
-        <p class="report-content" style="display: inline; color: ${isDarkMode ? '#f7fafc' : '#1a202c'};">${mainType.targetedGroup}</p>
-      </div>
+//       <div class="report-row" style="margin-bottom: 12px;">
+//         <span class="report-label" style="font-weight: bold; color: ${isDarkMode ? '#cbd5e0' : '#4a5568'}; min-width: 120px; display: inline-block;">الفئة المستهدفة:</span>
+//         <p class="report-content" style="display: inline; color: ${isDarkMode ? '#f7fafc' : '#1a202c'};">${mainType.targetedGroup}</p>
+//       </div>
       
-      <div class="phrases-section" style="margin-top: 15px;">
-        <h4 style="color: ${isDarkMode ? '#f7fafc' : '#1a202c'}; margin-bottom: 10px;">العبارات الدالة:</h4>
-        ${mainType.indicativePhrases.map(phrase => `
-          <div class="phrase-item" style="margin-bottom: 10px;">
-            <span class="phrase-text" style="font-weight: bold; color: #d32f2f;">"${phrase.phrase}"</span>
-            <span class="phrase-explanation" style="color: ${isDarkMode ? '#cbd5e0' : '#4a5568'}; margin-right: 5px;">
-              ${phrase.explanation}
-            </span>
-          </div>
-        `).join('')}
-      </div>
-    </div>
+//       <div class="phrases-section" style="margin-top: 15px;">
+//         <h4 style="color: ${isDarkMode ? '#f7fafc' : '#1a202c'}; margin-bottom: 10px;">العبارات الدالة:</h4>
+//         ${mainType.indicativePhrases.map(phrase => `
+//           <div class="phrase-item" style="margin-bottom: 10px;">
+//             <span class="phrase-text" style="font-weight: bold; color: #d32f2f;">"${phrase.phrase}"</span>
+//             <span class="phrase-explanation" style="color: ${isDarkMode ? '#cbd5e0' : '#4a5568'}; margin-right: 5px;">
+//               ${phrase.explanation}
+//             </span>
+//           </div>
+//         `).join('')}
+//       </div>
+//     </div>
     
-    <div class="education-section" style="margin-top: 20px; padding: 15px; border-radius: 8px; background: ${isDarkMode ? '#4a5568' : '#f8f9fa'};">
-      <h4 style="margin-top: 0; color: ${isDarkMode ? '#f7fafc' : '#1a202c'};">معلومات عن "${mainType.name}"</h4>
-      <p style="line-height: 1.6; color: ${isDarkMode ? '#f7fafc' : '#1a202c'};">${mainType.description}</p>
-    </div>
-  `;
+//     <div class="education-section" style="margin-top: 20px; padding: 15px; border-radius: 8px; background: ${isDarkMode ? '#4a5568' : '#f8f9fa'};">
+//       <h4 style="margin-top: 0; color: ${isDarkMode ? '#f7fafc' : '#1a202c'};">معلومات عن "${mainType.name}"</h4>
+//       <p style="line-height: 1.6; color: ${isDarkMode ? '#f7fafc' : '#1a202c'};">${mainType.description}</p>
+//     </div>
+//   `;
   
-  popup.style.display = 'block';
-  updatePopupTheme(); // Apply current theme
-}
+//   popup.style.display = 'block';
+//   updatePopupTheme(); // Apply current theme
+// }
 
-// Add this to your theme toggle function
-function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+// // Add this to your theme toggle function
+// function toggleTheme() {
+//   const currentTheme = document.documentElement.getAttribute('data-theme');
+//   const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
   
-  document.documentElement.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme);
+//   document.documentElement.setAttribute('data-theme', newTheme);
+//   localStorage.setItem('theme', newTheme);
   
-  updateThemeUI(newTheme);
-  updatePopupTheme(); // Update popup when theme changes
-}
+//   updateThemeUI(newTheme);
+//   updatePopupTheme(); // Update popup when theme changes
+// }
 
-// Initialize with theme support
-document.addEventListener('DOMContentLoaded', () => {
-  // ... your existing initialization code ...
+// // Initialize with theme support
+// document.addEventListener('DOMContentLoaded', () => {
+//   // ... your existing initialization code ...
   
-  // Watch for theme changes
-  const observer = new MutationObserver(updatePopupTheme);
-  observer.observe(document.documentElement, { 
-    attributes: true, 
-    attributeFilter: ['data-theme'] 
-  });
-})
+//   // Watch for theme changes
+//   const observer = new MutationObserver(updatePopupTheme);
+//   observer.observe(document.documentElement, { 
+//     attributes: true, 
+//     attributeFilter: ['data-theme'] 
+//   });
+// })
 
-// Simulate Analysis (Temporary Testing)
-function simulateAnalysis() {
-  const mainType = getRandomMainHateType();
-  const hatePercent = Math.floor(Math.random() * 50) + 50; // 50-100%
+// // Simulate Analysis (Temporary Testing)
+// function simulateAnalysis() {
+//   const mainType = getRandomMainHateType();
+//   const hatePercent = Math.floor(Math.random() * 50) + 50; // 50-100%
   
-  // Update chart
-  resultsChart.data.datasets[0].data = [hatePercent, 100 - hatePercent];
-  resultsChart.update();
+//   // Update chart
+//   resultsChart.data.datasets[0].data = [hatePercent, 100 - hatePercent];
+//   resultsChart.update();
   
-  // Update verdict text
-  verdictText.textContent = `${hatePercent}% ${mainType.name}`;
-  verdictText.style.color = '#FF4D4D';
+//   // Update verdict text
+//   verdictText.textContent = `${hatePercent}% ${mainType.name}`;
+//   verdictText.style.color = '#FF4D4D';
   
-  // Show view more button
-  viewMoreBtn.style.display = 'block';
+//   // Show view more button
+//   viewMoreBtn.style.display = 'block';
   
-  // Store for detailed view
-  window.mainHateType = mainType;
-}
+//   // Store for detailed view
+//   window.mainHateType = mainType;
+// }
 
-// Event Listeners
-checkBtn.addEventListener('click', () => {
-  const text = textInput.value.trim();
-  if (!text) {
-    alert("الرجاء إدخال نص للتحليل");
-    return;
-  }
+// // Event Listeners
+// checkBtn.addEventListener('click', () => {
+//   const text = textInput.value.trim();
+//   if (!text) {
+//     alert("الرجاء إدخال نص للتحليل");
+//     return;
+//   }
   
-  // Simulate analysis
-  checkBtn.disabled = true;
-  checkBtn.textContent = "جاري التحليل...";
+//   // Simulate analysis
+//   checkBtn.disabled = true;
+//   checkBtn.textContent = "جاري التحليل...";
   
-  setTimeout(() => {
-    simulateAnalysis();
-    checkBtn.disabled = false;
-    checkBtn.textContent = "تحليل";
-  }, 1500);
-});
+//   setTimeout(() => {
+//     simulateAnalysis();
+//     checkBtn.disabled = false;
+//     checkBtn.textContent = "تحليل";
+//   }, 1500);
+// });
 
-viewMoreBtn.addEventListener('click', () => {
-  if (window.mainHateType) {
-    showHateSpeechReport(window.mainHateType);
-  } else {
-    alert("لا توجد نتائج متاحة لعرض التفاصيل");
-  }
-});
+// viewMoreBtn.addEventListener('click', () => {
+//   if (window.mainHateType) {
+//     showHateSpeechReport(window.mainHateType);
+//   } else {
+//     alert("لا توجد نتائج متاحة لعرض التفاصيل");
+//   }
+// });
 
-closeBtn.addEventListener('click', () => popup.style.display = 'none');
-window.addEventListener('click', (e) => {
-  if (e.target === popup) popup.style.display = 'none';
-});
+// closeBtn.addEventListener('click', () => popup.style.display = 'none');
+// window.addEventListener('click', (e) => {
+//   if (e.target === popup) popup.style.display = 'none';
+// });
 
 
 
-function updatePopupTheme() {
-  const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-  const popupContent = document.querySelector('.popup-content');
+// function updatePopupTheme() {
+//   const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+//   const popupContent = document.querySelector('.popup-content');
   
-  if (popupContent) {
-    if (isDarkMode) {
-      // Dark mode styles
-      popupContent.style.backgroundColor = '#2d3748';
-      popupContent.style.color = '#f7fafc';
-      popupContent.querySelectorAll('.report-section, .education-section').forEach(section => {
-        section.style.backgroundColor = '#4a5568';
-        section.style.color = '#f7fafc';
-      });
-      popupContent.querySelectorAll('.report-label, .phrase-explanation').forEach(el => {
-        el.style.color = '#cbd5e0';
-      });
-    } else {
-      // Light mode styles
-      popupContent.style.backgroundColor = '#fefefe';
-      popupContent.style.color = '#1a202c';
-      popupContent.querySelectorAll('.report-section, .education-section').forEach(section => {
-        section.style.backgroundColor = '#f8f9fa';
-        section.style.color = '#1a202c';
-      });
-      popupContent.querySelectorAll('.report-label, .phrase-explanation').forEach(el => {
-        el.style.color = '#4a5568';
-      });
-    }
-  }
-}
+//   if (popupContent) {
+//     if (isDarkMode) {
+//       // Dark mode styles
+//       popupContent.style.backgroundColor = '#2d3748';
+//       popupContent.style.color = '#f7fafc';
+//       popupContent.querySelectorAll('.report-section, .education-section').forEach(section => {
+//         section.style.backgroundColor = '#4a5568';
+//         section.style.color = '#f7fafc';
+//       });
+//       popupContent.querySelectorAll('.report-label, .phrase-explanation').forEach(el => {
+//         el.style.color = '#cbd5e0';
+//       });
+//     } else {
+//       // Light mode styles
+//       popupContent.style.backgroundColor = '#fefefe';
+//       popupContent.style.color = '#1a202c';
+//       popupContent.querySelectorAll('.report-section, .education-section').forEach(section => {
+//         section.style.backgroundColor = '#f8f9fa';
+//         section.style.color = '#1a202c';
+//       });
+//       popupContent.querySelectorAll('.report-label, .phrase-explanation').forEach(el => {
+//         el.style.color = '#4a5568';
+//       });
+//     }
+//   }
+// }
 
-// Initialize other components...
-initMobileMenu();
-initLanguageToggle();
-// ... other init functions
+// // Initialize other components...
+// initMobileMenu();
+// initLanguageToggle();
+// // ... other init functions
