@@ -1032,4 +1032,4 @@ document.getElementById('file-input').addEventListener('change', async (e) => {
 // // Initialize other components...
 // initMobileMenu();
 // initLanguageToggle();
-// // ... other init functions
+// // ... other init functions 
